@@ -1,6 +1,6 @@
 # Optymalizacja-1
 
-zadania mozna uruchomic w https://sagecell.sagemath.org/
+zadania mozna uruchomic w https://cloud.sagemath.com/
 
 hetmani: Lab-2/problem-2.1
 
