@@ -26,6 +26,7 @@ nonnegative = numpy.array([1, 1])
 # 1. ZAMIANA NA POSTAĆ NORMALNĄ
 
 def normalize(A, z, b, c):
+    m = A.shape[0]
     n = A.shape[1]
     for i in range(len(z)):
         if z[i] != 0:
