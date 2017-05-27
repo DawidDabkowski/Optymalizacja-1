@@ -1,4 +1,5 @@
 import random
+import operator
 
 #
 # Rozne implementacje pivot rules
@@ -6,13 +7,41 @@ import random
 
 # [1] Wybor zmiennej o najwiekszym wspolczynniku funkcji celu
 
+def largest_coefficient_entering(self):
+    coefficients = {}
+    for variable in self.possible_entering():
+        index = list(self.nonbasic_variables()).index(variable)
+        coefficients[variable] = self.objective_coefficients()[index]
+    return max(coefficients.iteritems(), key=operator.itemgetter(1))[0]
+
 # [2] Wybor zmiennej o najmniejszym wspolczynniku funkcji celu
 
+def smallest_coefficient_entering(self):
+    coefficients = {}
+    for variable in self.possible_entering():
+        index = list(self.nonbasic_variables()).index(variable)
+        coefficients[variable] = self.objective_coefficients()[index]
+    return min(coefficients.iteritems(), key=operator.itemgetter(1))[0]
+
 # [3] Wybor zmiennej, ktory prowadzi do najwiekszego wzrostu funkcji celu
+
+def largest_increase_entering(self):
+    values = {}
+    for variable in self.possible_entering():
+        index = list(self.nonbasic_variables()).index(variable)
+        new_problem = self.enter(variable)
+        new_problem = new_problem.leave(new.problem.possible_leaving()[0])        
+        values[variable] = new_problem.objective_value()
+    print values
+    return max(values.iteritems(), key=operator.itemgetter(1))[0]
+    
 
 # [4] Wybor zmiennej, ktory prowadzi do najmniejszego wzrostu funkcji celu
 
 # [5] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najblizszym wektorowi c (gradientowi funkcji celu)
+
+def steepest_edge_entering(self):
+    pass
 
 # [6] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najdalszym wektorowi c (gradientowi funkcji celu)
 
@@ -36,20 +65,20 @@ def lexicographical_max_leaving(self):
 # No nie do konca jednostajne bo losowania sa niezalezne
 
 def random_edge_entering(self):
-  return random.choice(self.possible_entering())
+    return random.choice(self.possible_entering())
   
 def random_edge_leaving(self):
-  return random.choice(self.possible_leaving()) 
+    return random.choice(self.possible_leaving()) 
 
 #
 # Wybor funkcji pivot
 #
 
-def random_edge_entering(self):
-    return lexicographical_min_entering(self)
+def my_entering(self):
+    return largest_increase_entering(self)
 
-def random_edge_leaving(self):
-    return lexicographical_min_leaving(self)
+def my_leaving(self):
+    return random_edge_leaving(self)
 
 #
 # Definicja problemu
