@@ -9,3 +9,5 @@ zadanie2 (algorytm wierzcholkow): Lab-3/problem-3.4.sagews
 zadanie3 (program pomocniczy): Lab-6/problem-6.7.sagews
 
 zadanie4 (gra Colonel Blotto): Lab-8/problem-8.3.sagews
+
+zadanie5 (pokrycie wierzcholkowe): Lab-10/problem-10.3.sagews
