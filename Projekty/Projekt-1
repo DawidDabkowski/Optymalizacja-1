@@ -6,7 +6,7 @@ from copy import deepcopy
 # Rozne implementacje pivot rules
 #
 
-# [1] Wybor zmiennej wejsciowej o najwiekszym wspolczynniku funkcji celu
+# [0] Wybor zmiennej wejsciowej o najwiekszym wspolczynniku funkcji celu
 
 def coefficient_entering(self):
     coefficients = {}
@@ -19,59 +19,66 @@ def largest_coefficient_entering(self):
     coefficients = coefficient_entering(self)
     return max(coefficients.iteritems(), key=operator.itemgetter(1))[0]
 
-# [2] Wybor zmiennej o najmniejszym wspolczynniku funkcji celu
+def largest_coefficient_leaving(self):
+    return self.possible_leaving()[0]
+
+# [1] Wybor zmiennej o najmniejszym wspolczynniku funkcji celu
 
 def smallest_coefficient_entering(self):
     coefficients = coefficient_entering(self)
     return min(coefficients.iteritems(), key=operator.itemgetter(1))[0]
 
-# [3] Wybor zmiennej, ktory prowadzi do najwiekszego wzrostu funkcji celu
+def smallest_coefficient_leaving(self):
+    return self.possible_leaving()[0]
 
-def largest_increase(self):
+# [2] Wybor zmiennej, ktory prowadzi do najwiekszego wzrostu funkcji celu
+
+def objective_values(self):
     values = {}
     for variable1 in self.possible_entering():
-        new_problem = deepcopy(self)
-        new_problem.enter(variable1)
-        for variable2 in new_problem.possible_leaving():
-            new_problem2 = deepcopy(new_problem)
-            new_problem2.leave(variable2)
-            new_problem2.update()
-            values[(variable1, variable2)] = new_problem2.objective_value()
-    #print values
-    return max(values.iteritems(), key=operator.itemgetter(1))[0]
+        self.enter(variable1)
+        for variable2 in self.possible_leaving():
+            self.leave(variable2)
+            self.update()
+            values[(variable1, variable2)] = self.objective_value()
+#            self.enter(variable2)
+#            self.leave(variable1)
+#            self.update()
+            self.enter(variable2)
+            self.update()
+        self.leave(variable1)
+    return values        
+            
+
+#def objective_values(self):
+#    values = {}
+#    for variable1 in self.possible_entering():
+#        new_problem = deepcopy(self)
+#        new_problem.enter(variable1)
+#        for variable2 in new_problem.possible_leaving():
+#            new_problem2 = deepcopy(new_problem)
+#            new_problem2.leave(variable2)
+#            new_problem2.update()
+#            values[(variable1, variable2)] = new_problem2.objective_value()
+#    #print values
+#    return values
 
 def largest_increase_entering(self):
-    return largest_increase(self)[0]
+    values = objective_values(self)
+    return max(values.iteritems(), key=operator.itemgetter(1))[0][0]
     
 def largest_increase_leaving(self):
-    return largest_increase(self)[1]
+    values = objective_values(self)
+    return max(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
 # [4] Wybor zmiennej, ktory prowadzi do najmniejszego wzrostu funkcji celu
 
 def smallest_increase_entering(self):
-    values = {}
-    for variable1 in self.possible_entering():
-        new_problem = deepcopy(self)
-        new_problem.enter(variable1)
-        for variable2 in new_problem.possible_leaving():
-            new_problem2 = deepcopy(new_problem)
-            new_problem2.leave(variable2)
-            new_problem2.update()
-            values[(variable1, variable2)] = new_problem2.objective_value()
-    #print values
+    values = objective_values(self)
     return min(values.iteritems(), key=operator.itemgetter(1))[0][0]
     
 def smallest_increase_leaving(self):
-    values = {}
-    for variable1 in self.possible_entering():
-        new_problem = deepcopy(self)
-        new_problem.enter(variable1)
-        for variable2 in new_problem.possible_leaving():
-            new_problem2 = deepcopy(new_problem)
-            new_problem2.leave(variable2)
-            new_problem2.update()
-            values[(variable1, variable2)] = new_problem2.objective_value()
-    #print values
+    values = objective_values(self)
     return min(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
 # [5] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najblizszym wektorowi c (gradientowi funkcji celu)
@@ -100,22 +107,35 @@ def lexicographical_max_leaving(self):
 # [9] Wybor losowy (prawdopodobienstwo jednostajne).
 # No nie do konca jednostajne bo losowania sa niezalezne
 
-def random_edge_entering(self):
+def random_variable_entering(self):
     return random.choice(self.possible_entering())
   
-def random_edge_leaving(self):
+def random_variable_leaving(self):
     return random.choice(self.possible_leaving())
 
 #
 # Wybor funkcji pivot
 #
 
+pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_leaving(self)"),  #0
+                  ("smallest_coefficient_entering(self)", "smallest_coefficient_leaving(self)"), #1
+                  ("largest_increase_entering(self)", "largest_increase_leaving(self)"),         #2
+                  ("smallest_increase_entering(self)", "smallest_increase_leaving(self)"),       #3
+                  ("steepest_edge_entering(self)", "steepest_edge_leaving(self)"),               #4
+                  ("flattest_edge_entering(self)", "flattest_edge_leaving(self)"),               #5
+                  ("lexicographical_max_entering(self)", "lexicographical_max_leaving(self)"),   #6
+                  ("lexicographical_min_entering(self)", "lexicographical_min_leaving(self)"),   #7
+                  ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8
+                  ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9
+
+ind = 9
+
 def my_entering(self):
     #return random_edge_entering(self)
-    return largest_coefficient_entering(self)
+    return eval(pivot_functions[ind][0])
 
 def my_leaving(self):
-    return random_edge_leaving(self)
+    return eval(pivot_functions[ind][1])
 
 #
 # Definicja problemu
