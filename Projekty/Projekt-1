@@ -1,6 +1,8 @@
 import random
 import operator
 from copy import deepcopy
+import numpy as np
+from numpy import linalg as LA
 
 #
 # Rozne implementacje pivot rules
@@ -33,34 +35,36 @@ def smallest_coefficient_leaving(self):
 
 # [2] Wybor zmiennej, ktory prowadzi do najwiekszego wzrostu funkcji celu
 
-def objective_values(self):
-    values = {}
-    for variable1 in self.possible_entering():
-        self.enter(variable1)
-        for variable2 in self.possible_leaving():
-            self.leave(variable2)
-            self.update()
-            values[(variable1, variable2)] = self.objective_value()
-            self.enter(variable2)
-            self.leave(variable1)
-            self.update()
-            self.enter(variable1)
-#        self.enter(None)
-    return values        
-
-##Implementacja wykorzystujaca kopiowanie calego obiektu klasy InteractiveLPProgram
+#Implementacja wykorzystujaca cofanie sie po wierzchołkach (obecnie nie dziala poprawnie)
 #def objective_values(self):
 #    values = {}
 #    for variable1 in self.possible_entering():
-#        new_problem = deepcopy(self)
-#        new_problem.enter(variable1)
-#        for variable2 in new_problem.possible_leaving():
-#            new_problem2 = deepcopy(new_problem)
-#            new_problem2.leave(variable2)
-#            new_problem2.update()
-#            values[(variable1, variable2)] = new_problem2.objective_value()
-#    #print values
-#    return values
+#        self.enter(variable1)
+#        for variable2 in self.possible_leaving():
+#            self.leave(variable2)
+#            self.update()
+#            values[(variable1, variable2)] = self.objective_value()
+#            self.enter(variable2)
+#            self.leave(variable1)
+#            self.update()
+#            self.enter(variable1)
+##        self.enter(None)
+#    print values
+#    return values        
+
+#Implementacja wykorzystujaca kopiowanie calego obiektu klasy InteractiveLPProgram
+def objective_values(self):
+    values = {}
+    for variable1 in self.possible_entering():
+        new_problem = deepcopy(self)
+        new_problem.enter(variable1)
+        for variable2 in new_problem.possible_leaving():
+            new_problem2 = deepcopy(new_problem)
+            new_problem2.leave(variable2)
+            new_problem2.update()
+            values[(variable1, variable2)] = new_problem2.objective_value()
+    #print values
+    return values
 
 def largest_increase_entering(self):
     values = objective_values(self)
@@ -83,25 +87,36 @@ def smallest_increase_leaving(self):
 # [4] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najblizszym wektorowi c (gradientowi funkcji celu)
 
 def steepness_values(self):
-    pass
+    values = {}
+    for variable1 in self.possible_entering():
+        new_problem = deepcopy(self)
+        new_problem.enter(variable1)
+        for variable2 in new_problem.possible_leaving():
+            new_problem2 = deepcopy(new_problem)
+            new_problem2.leave(variable2)
+            new_problem2.update()
+            x_delta = new_problem2.basic_solution()-self.basic_solution()
+            values[(variable1, variable2)] = np.dot(self.objective_coefficients(), x_delta/np.linalg.norm(x_delta))
+    #print values
+    return values
 
 def steepest_edge_entering(self):
     values = steepness_values(self)
-    pass
+    return max(values.iteritems(), key=operator.itemgetter(1))[0][0]
 
 def steepest_edge_leaving(self):
     values = steepness_values(self)
-    pass
+    return max(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
 # [5] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najdalszym wektorowi c (gradientowi funkcji celu)
 
 def flattest_edge_entering(self):
     values = steepness_values(self)
-    pass
+    return min(values.iteritems(), key=operator.itemgetter(1))[0][0]
 
 def flattest_edge_leaving(self):
     values = steepness_values(self)
-    pass
+    return min(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
 # [6] Wybor zmiennej wchodacej i wychodzacej o najmniejszym indeksie
 
@@ -121,34 +136,19 @@ def lexicographical_max_leaving(self):
 
 # [8] Wybor losowej krawedzi (prawdopodobienstwo jednostajne)
 
-##Implementacja wykorzystujaca kopiowanie calego obiektu klasy InteractiveLPProgram
-#def edge_names(self):
-#    names = []
-#    for variable1 in self.possible_entering():
-#        new_problem = deepcopy(self)
-#        new_problem.enter(variable1)
-#        for variable2 in new_problem.possible_leaving():
-#            new_problem2 = deepcopy(new_problem)
-#            new_problem2.leave(variable2)
-#            new_problem2.update()
-#            names.append((variable1, variable2))
-#    #print values
-#    return names
-
 def edge_names(self):
     names = []
     for variable1 in self.possible_entering():
-        self.enter(variable1)
-        for variable2 in self.possible_leaving():
-            self.leave(variable2)
-            self.update()
+        new_problem = deepcopy(self)
+        new_problem.enter(variable1)
+        for variable2 in new_problem.possible_leaving():
+            new_problem2 = deepcopy(new_problem)
+            new_problem2.leave(variable2)
+            new_problem2.update()
             names.append((variable1, variable2))
-            self.enter(variable2)
-            self.leave(variable1)
-            self.update()
-            self.enter(variable1)
-#        self.enter(None)
-    return names     
+    #print values
+    return names
+
 
 global_edge = None
 count = 0
@@ -177,21 +177,22 @@ def random_variable_leaving(self):
 # Wybor funkcji pivot
 #
 
-pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_leaving(self)"),  #0
-                  ("smallest_coefficient_entering(self)", "smallest_coefficient_leaving(self)"), #1
-                  ("largest_increase_entering(self)", "largest_increase_leaving(self)"),         #2
-                  ("smallest_increase_entering(self)", "smallest_increase_leaving(self)"),       #3
-                  ("steepest_edge_entering(self)", "steepest_edge_leaving(self)"),               #4
-                  ("flattest_edge_entering(self)", "flattest_edge_leaving(self)"),               #5
-                  ("lexicographical_max_entering(self)", "lexicographical_max_leaving(self)"),   #6
-                  ("lexicographical_min_entering(self)", "lexicographical_min_leaving(self)"),   #7
-                  ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8
-                  ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9
+pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_leaving(self)"),  #0 OK
+                  ("smallest_coefficient_entering(self)", "smallest_coefficient_leaving(self)"), #1 OK
+                  ("largest_increase_entering(self)", "largest_increase_leaving(self)"),         #2 OK
+                  ("smallest_increase_entering(self)", "smallest_increase_leaving(self)"),       #3 OK
+                  ("steepest_edge_entering(self)", "steepest_edge_leaving(self)"),               #4 OK
+                  ("flattest_edge_entering(self)", "flattest_edge_leaving(self)"),               #5 OK
+                  ("lexicographical_max_entering(self)", "lexicographical_max_leaving(self)"),   #6 OK
+                  ("lexicographical_min_entering(self)", "lexicographical_min_leaving(self)"),   #7 OK
+                  ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8 OK
+                  ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9 OK
 
-method = 8
+method = 5
 
 def my_entering(self):
-    #print global_edge
+    #print self.basic_solution(), 
+    print self.objective_value()
     return eval(pivot_functions[method][0])
 
 def my_leaving(self):
@@ -207,13 +208,14 @@ LP = \
 Minimize
 Sum_of_Transporting_Costs: 2 Route_A_1 + 4 Route_A_2 + 5 Route_A_3
  + 2 Route_A_4 + Route_A_5 + 3 Route_B_1 + Route_B_2 + 3 Route_B_3
- + 2 Route_B_4 + 3 Route_B_5
+ + 2 Route_B_4 + 3 Route_B_5 + Route_A_6
 Subject To
 Sum_of_Products_into_Bar1: Route_A_1 + Route_B_1 >= 500
 Sum_of_Products_into_Bar2: Route_A_2 + Route_B_2 >= 900
 Sum_of_Products_into_Bar3: Route_A_3 + Route_B_3 >= 1800
 Sum_of_Products_into_Bar4: Route_A_4 + Route_B_4 >= 200
 Sum_of_Products_into_Bar5: Route_A_5 + Route_B_5 >= 700
+Sum_of_Products_into_Bar6: Route_A_6 + Route_B_6 >= 1200
 Sum_of_Products_out_of_Warehouse_A: Route_A_1 + Route_A_2 + Route_A_3
  + Route_A_4 + Route_A_5 <= 1000
 Sum_of_Products_out_of_Warehouse_B: Route_B_1 + Route_B_2 + Route_B_3
@@ -224,11 +226,13 @@ Route_A_2 >= 0
 Route_A_3 >= 0
 Route_A_4 >= 0
 Route_A_5 >= 0
+Route_A_6 >= 0
 Route_B_1 >= 0
 Route_B_2 >= 0
 Route_B_3 >= 0
 Route_B_4 >= 0
 Route_B_5 >= 0
+Route_B_6 >= 0
 End
 """
 
