@@ -188,15 +188,12 @@ pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_l
                   ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8 OK
                   ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9 OK
 
-method = 5
+method = 8
 
 def my_entering(self):
-    #print self.basic_solution(), 
-    print self.objective_value()
     return eval(pivot_functions[method][0])
 
 def my_leaving(self):
-    #print global_edge
     return eval(pivot_functions[method][1])
 
 #
