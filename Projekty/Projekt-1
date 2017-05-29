@@ -118,21 +118,22 @@ def flattest_edge_leaving(self):
     values = steepness_values(self)
     return min(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
-# [6] Wybor zmiennej wchodacej i wychodzacej o najmniejszym indeksie
-
-def lexicographical_min_entering(self):
-	return min(self.possible_entering())
-
-def lexicographical_min_leaving(self):
-	return min(self.possible_leaving())
   
-# [7] Wybor zmiennej wchodacej i wychodzacej o najwiekszym indeksie
+# [6] Wybor zmiennej wchodacej i wychodzacej o najwiekszym indeksie
 
 def lexicographical_max_entering(self):
 	return max(self.possible_entering())
 
 def lexicographical_max_leaving(self):
 	return max(self.possible_leaving())
+
+# [7] Wybor zmiennej wchodacej i wychodzacej o najmniejszym indeksie
+
+def lexicographical_min_entering(self):
+	return min(self.possible_entering())
+
+def lexicographical_min_leaving(self):
+	return min(self.possible_leaving())
 
 # [8] Wybor losowej krawedzi (prawdopodobienstwo jednostajne)
 
