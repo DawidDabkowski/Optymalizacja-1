@@ -41,15 +41,14 @@ def objective_values(self):
             self.leave(variable2)
             self.update()
             values[(variable1, variable2)] = self.objective_value()
-#            self.enter(variable2)
-#            self.leave(variable1)
-#            self.update()
             self.enter(variable2)
+            self.leave(variable1)
             self.update()
-        self.leave(variable1)
+            self.enter(variable1)
+#        self.enter(None)
     return values        
-            
 
+##Implementacja wykorzystujaca kopiowanie calego obiektu klasy InteractiveLPProgram
 #def objective_values(self):
 #    values = {}
 #    for variable1 in self.possible_entering():
@@ -71,7 +70,7 @@ def largest_increase_leaving(self):
     values = objective_values(self)
     return max(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
-# [4] Wybor zmiennej, ktory prowadzi do najmniejszego wzrostu funkcji celu
+# [3] Wybor zmiennej, ktory prowadzi do najmniejszego wzrostu funkcji celu
 
 def smallest_increase_entering(self):
     values = objective_values(self)
@@ -81,14 +80,30 @@ def smallest_increase_leaving(self):
     values = objective_values(self)
     return min(values.iteritems(), key=operator.itemgetter(1))[0][1]
 
-# [5] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najblizszym wektorowi c (gradientowi funkcji celu)
+# [4] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najblizszym wektorowi c (gradientowi funkcji celu)
 
-def steepest_edge_entering(self):
+def steepness_values(self):
     pass
 
-# [6] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najdalszym wektorowi c (gradientowi funkcji celu)
+def steepest_edge_entering(self):
+    values = steepness_values(self)
+    pass
 
-# [7] Wybor zmiennej wchodacej i wychodzacej o najmniejszym indeksie
+def steepest_edge_leaving(self):
+    values = steepness_values(self)
+    pass
+
+# [5] Wybor zmiennej, ktory prowadzi do wierzcholka w kierunku najdalszym wektorowi c (gradientowi funkcji celu)
+
+def flattest_edge_entering(self):
+    values = steepness_values(self)
+    pass
+
+def flattest_edge_leaving(self):
+    values = steepness_values(self)
+    pass
+
+# [6] Wybor zmiennej wchodacej i wychodzacej o najmniejszym indeksie
 
 def lexicographical_min_entering(self):
 	return min(self.possible_entering())
@@ -96,16 +111,61 @@ def lexicographical_min_entering(self):
 def lexicographical_min_leaving(self):
 	return min(self.possible_leaving())
   
-# [8] Wybór zmiennej wchodacej i wychodzacej o najwiekszym indeksie
+# [7] Wybor zmiennej wchodacej i wychodzacej o najwiekszym indeksie
 
 def lexicographical_max_entering(self):
 	return max(self.possible_entering())
 
 def lexicographical_max_leaving(self):
 	return max(self.possible_leaving())
-  
-# [9] Wybor losowy (prawdopodobienstwo jednostajne).
-# No nie do konca jednostajne bo losowania sa niezalezne
+
+# [8] Wybor losowej krawedzi (prawdopodobienstwo jednostajne)
+
+##Implementacja wykorzystujaca kopiowanie calego obiektu klasy InteractiveLPProgram
+#def edge_names(self):
+#    names = []
+#    for variable1 in self.possible_entering():
+#        new_problem = deepcopy(self)
+#        new_problem.enter(variable1)
+#        for variable2 in new_problem.possible_leaving():
+#            new_problem2 = deepcopy(new_problem)
+#            new_problem2.leave(variable2)
+#            new_problem2.update()
+#            names.append((variable1, variable2))
+#    #print values
+#    return names
+
+def edge_names(self):
+    names = []
+    for variable1 in self.possible_entering():
+        self.enter(variable1)
+        for variable2 in self.possible_leaving():
+            self.leave(variable2)
+            self.update()
+            names.append((variable1, variable2))
+            self.enter(variable2)
+            self.leave(variable1)
+            self.update()
+            self.enter(variable1)
+#        self.enter(None)
+    return names     
+
+global_edge = None
+count = 0
+
+def random_edge_entering(self):
+    if count%2 == 0:
+        names = edge_names(self)
+        global_edge = random.choice(names)
+    return global_edge[0]
+
+def random_edge_leaving(self):
+    if count%2 == 0:
+        names = edge_names(self)
+        global_edge = random.choice(names)
+    return global_edge[1]
+
+# [9] Wybor losowej zmiennej
 
 def random_variable_entering(self):
     return random.choice(self.possible_entering())
@@ -128,14 +188,15 @@ pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_l
                   ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8
                   ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9
 
-ind = 9
+method = 8
 
 def my_entering(self):
-    #return random_edge_entering(self)
-    return eval(pivot_functions[ind][0])
+    #print global_edge
+    return eval(pivot_functions[method][0])
 
 def my_leaving(self):
-    return eval(pivot_functions[ind][1])
+    #print global_edge
+    return eval(pivot_functions[method][1])
 
 #
 # Definicja problemu
