@@ -2,7 +2,7 @@
 
 zadania mozna uruchomic w https://cloud.sagemath.com/
 
-zadanie1 (zagadnienie hetmanow): [link](https://github.com/DawidDabkowski/Optymalizacja-1/blob/master/Lab-2/problem-2.1.sagews)
+zadanie1 (zagadnienie hetmanow): [Lab-2/problem-2.1.sagews](https://github.com/DawidDabkowski/Optymalizacja-1/blob/master/Lab-2/problem-2.1.sagews)
 
 zadanie2 (algorytm wierzcholkow): [link](https://github.com/DawidDabkowski/Optymalizacja-1/blob/master/Lab-3/problem-3.4.sagesws)
 
