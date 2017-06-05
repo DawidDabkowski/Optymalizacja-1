@@ -150,20 +150,25 @@ def edge_names(self):
     #print values
     return names
 
-
 global_edge = None
 count = 0
 
 def random_edge_entering(self):
+    global count
+    global global_edge
     if count%2 == 0:
         names = edge_names(self)
         global_edge = random.choice(names)
+    count += 1
     return global_edge[0]
 
 def random_edge_leaving(self):
+    global count
+    global global_edge
     if count%2 == 0:
         names = edge_names(self)
         global_edge = random.choice(names)
+    count += 1
     return global_edge[1]
 
 # [9] Wybor losowej zmiennej
@@ -189,10 +194,6 @@ pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_l
                   ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8 OK
                   ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9 OK
 
-method = 0
-repeats = 0
-limit = 100
-steps = 0
 
 def my_entering(self):
     return eval(pivot_functions[method][0])
@@ -207,41 +208,86 @@ def my_leaving(self):
 LP = \
 """
 Minimize
-Sum_of_Transporting_Costs: 2 Route_A_1 + 4 Route_A_2 + 5 Route_A_3
- + 2 Route_A_4 + Route_A_5 + 3 Route_B_1 + Route_B_2 + 3 Route_B_3
- + 2 Route_B_4 + 3 Route_B_5
+Total_Cost_of_Transport: 0.12 Route_('Chicago',_'Gary')
+ + 0.6 Route_('Chicago',_'Tempe') + 0.35 Route_('Cincinatti',_'Albany')
+ + 0.55 Route_('Cincinatti',_'Houston')
+ + 0.375 Route_('Kansas_City',_'Houston')
+ + 0.65 Route_('Kansas_City',_'Tempe') + 0.4 Route_('Pittsburgh',_'Chicago')
+ + 0.35 Route_('Pittsburgh',_'Cincinatti') + 0.45 Route_('Pittsburgh',_'Gary')
+ + 0.45 Route_('Pittsburgh',_'Kansas_City')
+ + 0.5 Route_('Youngstown',_'Albany') + 0.375 Route_('Youngstown',_'Chicago')
+ + 0.35 Route_('Youngstown',_'Cincinatti')
+ + 0.45 Route_('Youngstown',_'Kansas_City')
 Subject To
-Sum_of_Products_into_Bar1: Route_A_1 + Route_B_1 >= 500
-Sum_of_Products_into_Bar2: Route_A_2 + Route_B_2 >= 900
-Sum_of_Products_into_Bar3: Route_A_3 + Route_B_3 >= 1800
-Sum_of_Products_into_Bar4: Route_A_4 + Route_B_4 >= 200
-Sum_of_Products_into_Bar5: Route_A_5 + Route_B_5 >= 700
-Sum_of_Products_out_of_Warehouse_A: Route_A_1 + Route_A_2 + Route_A_3
- + Route_A_4 + Route_A_5 <= 1000
-Sum_of_Products_out_of_Warehouse_B: Route_B_1 + Route_B_2 + Route_B_3
- + Route_B_4 + Route_B_5 <= 4000
-Bounds
-Route_A_1 >= 0
-Route_A_2 >= 0
-Route_A_3 >= 0
-Route_A_4 >= 0
-Route_A_5 >= 0
-Route_B_1 >= 0
-Route_B_2 >= 0
-Route_B_3 >= 0
-Route_B_4 >= 0
-Route_B_5 >= 0
+Steel_Flow_Conservation_in_Node_Albany: Route_('Cincinatti',_'Albany')
+ + Route_('Youngstown',_'Albany') >= 3000
+Steel_Flow_Conservation_in_Node_Chicago: - Route_('Chicago',_'Gary')
+ - Route_('Chicago',_'Tempe') + Route_('Pittsburgh',_'Chicago')
+ + Route_('Youngstown',_'Chicago') >= 0
+Steel_Flow_Conservation_in_Node_Cincinatti: - Route_('Cincinatti',_'Albany')
+ - Route_('Cincinatti',_'Houston') + Route_('Pittsburgh',_'Cincinatti')
+ + Route_('Youngstown',_'Cincinatti') >= 0
+Steel_Flow_Conservation_in_Node_Gary: Route_('Chicago',_'Gary')
+ + Route_('Pittsburgh',_'Gary') >= 6000
+Steel_Flow_Conservation_in_Node_Houston: Route_('Cincinatti',_'Houston')
+ + Route_('Kansas_City',_'Houston') >= 7000
+Steel_Flow_Conservation_in_Node_Kansas_City:
+ - Route_('Kansas_City',_'Houston') - Route_('Kansas_City',_'Tempe')
+ + Route_('Pittsburgh',_'Kansas_City') + Route_('Youngstown',_'Kansas_City')
+ >= 0
+Steel_Flow_Conservation_in_Node_Pittsburgh: - Route_('Pittsburgh',_'Chicago')
+ - Route_('Pittsburgh',_'Cincinatti') - Route_('Pittsburgh',_'Gary')
+ - Route_('Pittsburgh',_'Kansas_City') >= -15000
+Steel_Flow_Conservation_in_Node_Tempe: Route_('Chicago',_'Tempe')
+ + Route_('Kansas_City',_'Tempe') >= 4000
+Steel_Flow_Conservation_in_Node_Youngstown: - Route_('Youngstown',_'Albany')
+ - Route_('Youngstown',_'Chicago') - Route_('Youngstown',_'Cincinatti')
+ - Route_('Youngstown',_'Kansas_City') >= -10000
+
+Route_('Chicago',_'Gary') <= 4000
+Route_('Chicago',_'Tempe') <= 2000
+Route_('Cincinatti',_'Albany') <= 5000
+Route_('Cincinatti',_'Houston') <= 6000
+Route_('Kansas_City',_'Houston') <= 4000
+Route_('Kansas_City',_'Tempe') <= 4000
+Route_('Pittsburgh',_'Chicago') <= 4000
+Route_('Pittsburgh',_'Cincinatti') <= 2000
+Route_('Pittsburgh',_'Gary') <= 2000
+Route_('Pittsburgh',_'Kansas_City') <= 3000
+Route_('Youngstown',_'Albany') <= 1000
+Route_('Youngstown',_'Chicago') <= 5000
+Route_('Youngstown',_'Cincinatti') <= 3000
+Route_('Youngstown',_'Kansas_City') <= 5000
+
+Route_('Chicago',_'Gary') >= 0
+Route_('Chicago',_'Tempe') >= 0
+Route_('Cincinatti',_'Albany') >= 1000
+Route_('Cincinatti',_'Houston') >= 0
+Route_('Kansas_City',_'Houston') >= 0
+Route_('Kansas_City',_'Tempe') >= 0
+Route_('Pittsburgh',_'Chicago') >= 0
+Route_('Pittsburgh',_'Cincinatti') >= 0
+Route_('Pittsburgh',_'Gary') >= 0
+Route_('Pittsburgh',_'Kansas_City') >= 2000
+Route_('Youngstown',_'Albany') >= 0
+Route_('Youngstown',_'Chicago') >= 0
+Route_('Youngstown',_'Cincinatti') >= 0
+Route_('Youngstown',_'Kansas_City') >= 1000
 Generals
-Route_A_1
-Route_A_2
-Route_A_3
-Route_A_4
-Route_A_5
-Route_B_1
-Route_B_2
-Route_B_3
-Route_B_4
-Route_B_5
+Route_('Chicago',_'Gary')
+Route_('Chicago',_'Tempe')
+Route_('Cincinatti',_'Albany')
+Route_('Cincinatti',_'Houston')
+Route_('Kansas_City',_'Houston')
+Route_('Kansas_City',_'Tempe')
+Route_('Pittsburgh',_'Chicago')
+Route_('Pittsburgh',_'Cincinatti')
+Route_('Pittsburgh',_'Gary')
+Route_('Pittsburgh',_'Kansas_City')
+Route_('Youngstown',_'Albany')
+Route_('Youngstown',_'Chicago')
+Route_('Youngstown',_'Cincinatti')
+Route_('Youngstown',_'Kansas_City')
 End
 """
 
@@ -544,6 +590,11 @@ def read(fullDataString):
 #
 # Parsowanie danych
 #
+
+method = 0
+repeats = 0
+limit = 10
+steps = 0
 
 while method <= 9:
     m = read(LP)
