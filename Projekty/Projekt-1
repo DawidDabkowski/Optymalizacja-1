@@ -591,7 +591,7 @@ while method <= 9:
     if method in [8,9]:
         steps += D.pivots
         if repeats == limit:
-            print steps/limit,
+            print float(steps/limit),
             method += 1
             repeats = 0
             steps = 0
