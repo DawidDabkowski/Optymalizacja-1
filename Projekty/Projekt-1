@@ -189,7 +189,10 @@ pivot_functions = [("largest_coefficient_entering(self)", "largest_coefficient_l
                   ("random_edge_entering(self)", "random_edge_leaving(self)"),                   #8 OK
                   ("random_variable_entering(self)", "random_variable_leaving(self)")]           #9 OK
 
-method = 8
+method = 0
+repeats = 0
+limit = 100
+steps = 0
 
 def my_entering(self):
     return eval(pivot_functions[method][0])
@@ -206,14 +209,13 @@ LP = \
 Minimize
 Sum_of_Transporting_Costs: 2 Route_A_1 + 4 Route_A_2 + 5 Route_A_3
  + 2 Route_A_4 + Route_A_5 + 3 Route_B_1 + Route_B_2 + 3 Route_B_3
- + 2 Route_B_4 + 3 Route_B_5 + Route_A_6
+ + 2 Route_B_4 + 3 Route_B_5
 Subject To
 Sum_of_Products_into_Bar1: Route_A_1 + Route_B_1 >= 500
 Sum_of_Products_into_Bar2: Route_A_2 + Route_B_2 >= 900
 Sum_of_Products_into_Bar3: Route_A_3 + Route_B_3 >= 1800
 Sum_of_Products_into_Bar4: Route_A_4 + Route_B_4 >= 200
 Sum_of_Products_into_Bar5: Route_A_5 + Route_B_5 >= 700
-Sum_of_Products_into_Bar6: Route_A_6 + Route_B_6 >= 1200
 Sum_of_Products_out_of_Warehouse_A: Route_A_1 + Route_A_2 + Route_A_3
  + Route_A_4 + Route_A_5 <= 1000
 Sum_of_Products_out_of_Warehouse_B: Route_B_1 + Route_B_2 + Route_B_3
@@ -224,13 +226,22 @@ Route_A_2 >= 0
 Route_A_3 >= 0
 Route_A_4 >= 0
 Route_A_5 >= 0
-Route_A_6 >= 0
 Route_B_1 >= 0
 Route_B_2 >= 0
 Route_B_3 >= 0
 Route_B_4 >= 0
 Route_B_5 >= 0
-Route_B_6 >= 0
+Generals
+Route_A_1
+Route_A_2
+Route_A_3
+Route_A_4
+Route_A_5
+Route_B_1
+Route_B_2
+Route_B_3
+Route_B_4
+Route_B_5
 End
 """
 
@@ -534,44 +545,58 @@ def read(fullDataString):
 # Parsowanie danych
 #
 
-m = read(LP)
-P = m.getInteractiveLPProblem()
+while method <= 9:
+    m = read(LP)
+    P = m.getInteractiveLPProblem()
 
-#
-# Ustawienie wlasnej funkcji pivot
-#
+    #
+    # Ustawienie wlasnej funkcji pivot
+    #
 
-D = P.initial_dictionary()
+    D = P.initial_dictionary()
 
-if not D.is_feasible():
-    print "The initial dictionary is infeasible, solving auxiliary problem."
-    # Phase I
-    AD = P.auxiliary_problem().initial_dictionary()
-    AD.enter(P.auxiliary_variable())
-    AD.leave(min(zip(AD.constant_terms(), AD.basic_variables()))[int(1)])
-    AD.run_simplex_method()
-    if AD.objective_value() < 0:
-        print "The original problem is infeasible."
-        P._final_dictionary = AD
+    if not D.is_feasible():
+        #print "The initial dictionary is infeasible, solving auxiliary problem."
+        # Phase I
+        AD = P.auxiliary_problem().initial_dictionary()
+        AD.enter(P.auxiliary_variable())
+        AD.leave(min(zip(AD.constant_terms(), AD.basic_variables()))[int(1)])
+        AD.run_simplex_method()
+        if AD.objective_value() < 0:
+            #print "The original problem is infeasible."
+            P._final_dictionary = AD
+        else:
+            #print "Back to the original problem."
+            D = P.feasible_dictionary(AD)
+
+
+    D.run_simplex_method = types.MethodType(my_run_simplex_method, D)
+    D.pivots = 0
+
+    D.pivot_select_entering = types.MethodType(my_entering, D)
+    D.pivot_select_leaving = types.MethodType(my_leaving, D)
+
+    #
+    # Algorytm sympleks
+    #
+
+    if D.is_feasible():
+        D.run_simplex_method()
+
+    #print "Number of pivot steps: ", D.pivots
+    
+
+    #print D.objective_value()
+    #print P.optimal_solution()
+    if method in [8,9]:
+        steps += D.pivots
+        if repeats == limit:
+            print steps/limit,
+            method += 1
+            repeats = 0
+            steps = 0
+        else:
+            repeats += 1
     else:
-        print "Back to the original problem."
-        D = P.feasible_dictionary(AD)
-
-
-D.run_simplex_method = types.MethodType(my_run_simplex_method, D)
-D.pivots = 0
-
-D.pivot_select_entering = types.MethodType(my_entering, D)
-D.pivot_select_leaving = types.MethodType(my_leaving, D)
-
-#
-# Algorytm sympleks
-#
-
-if D.is_feasible():
-    D.run_simplex_method()
-
-print "Number of pivot steps: ", D.pivots
-
-print D.objective_value()
-print P.optimal_solution()
+        print D.pivots,
+        method += 1
