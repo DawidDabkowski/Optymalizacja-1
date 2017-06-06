@@ -33,23 +33,23 @@ Sum_of_Products_out_of_Plant_Phoenix: - 1700 BuildaPlant_Phoenix
 Sum_of_Products_out_of_Plant_San_Francisco: - 1700 BuildaPlant_San_Francisco
  + Route_San_Francisco_Barstow + Route_San_Francisco_Dallas
  + Route_San_Francisco_San_Diego + Route_San_Francisco_Tucson <= 0
-Bounds
-0 <= Route_Denver_Barstow
-0 <= Route_Denver_Dallas
-0 <= Route_Denver_San_Diego
-0 <= Route_Denver_Tucson
-0 <= Route_Los_Angeles_Barstow
-0 <= Route_Los_Angeles_Dallas
-0 <= Route_Los_Angeles_San_Diego
-0 <= Route_Los_Angeles_Tucson
-0 <= Route_Phoenix_Barstow
-0 <= Route_Phoenix_Dallas
-0 <= Route_Phoenix_San_Diego
-0 <= Route_Phoenix_Tucson
-0 <= Route_San_Francisco_Barstow
-0 <= Route_San_Francisco_Dallas
-0 <= Route_San_Francisco_San_Diego
-0 <= Route_San_Francisco_Tucson
+
+Route_Denver_Barstow >= 0
+Route_Denver_Dallas >= 0
+Route_Denver_San_Diego >= 0
+Route_Denver_Tucson >= 0
+Route_Los_Angeles_Barstow >= 0
+Route_Los_Angeles_Dallas >= 0
+Route_Los_Angeles_San_Diego >= 0
+Route_Los_Angeles_Tucson >= 0
+Route_Phoenix_Barstow >= 0
+Route_Phoenix_Dallas >= 0
+Route_Phoenix_San_Diego >= 0
+Route_Phoenix_Tucson >= 0
+Route_San_Francisco_Barstow >= 0
+Route_San_Francisco_Dallas >= 0
+Route_San_Francisco_San_Diego >= 0
+Route_San_Francisco_Tucson >= 0
 Generals
 Route_Denver_Barstow
 Route_Denver_Dallas
