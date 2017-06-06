@@ -1,0 +1,124 @@
+---
+title: "Metody wyboru zmiennych w algorytmie sympleks"
+author: "Dawid Dąbkowski, Anna Wójcik, Piotr Piękos"
+date: "6 czerwca 2017"
+output: html_document
+---
+
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 500)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(tidyr)
+library(scales)
+```
+
+```{r, echo=FALSE}
+data1 <- read.csv("methods_all.csv", sep=" ")
+data1 <- data1[,-2]
+data1 <- as.data.frame(t(data1))
+```
+
+## Funkcje pivot
+
+W analizie zastosowaliśmy 10 różnych funkcji wyboru zmiennych wchodzących i wychodzących:
+
+- `largest_coefficient` - wybór zmiennej wchodzącej o największym współczynniku funkcji celu, zmienna wychodząca pierwsza z listy
+
+- `smallest_coefficient` - wybór zmiennej wchodzącej o najmniejszym współczynniku funkcji celu, zmienna wychodząca pierwsza z listy
+
+- `largest_increase` - wybór krawędzi o największym wzroście funkcji celu
+
+- `smallest_increase` - wybór krawędzi o najmniejszym wzroście funkcji celu
+
+- `steepest_edge` - wybór krawędzi o kierunku najbliższym gradientowi funkcji celu
+
+- `flattest_edge` - wybór krawędzi o kierunku najdalszym gradientowi funkcji celu
+
+- `lexicographical_max` - wybór zmiennej wchodzącej i wychodzącej pierwszej słownikowo
+
+- `lexicographical_min` - wybór zmiennej wchodzącej i wychodzącej ostatniej słownikowo
+
+- `random_edge` - wybór losowej krawędzi
+
+- `random_variable` - wybór losowej zmiennej wchodzącej i losowej zmiennej wychodzącej
+
+## Testy
+
+Metody pivot zastosowaliśmy do 10 różnych problemów liniowych. Problemy te uszeregowane są rosnąco ze względu na ilość zmiennych i są to: `Furniture` (2), `WhiskasProblem2` (6), `FactoryProblem` (7), `FruitProblem` (9), `BeerDistributionProblem` (10), `CargoesProblem` (12), `BankProblem` (13), `AmericanSteelProblem` (14), `ComputerPlantProblem` (20), `ShiftProblem` (21). 
+
+W tabeli poniżej zapisana jest ilość kroków potrzebnych do znalezienia optymalnego wierzchołka dla każdej pary metoda-problem. W przypadku metod losowych (`random_edge` i `random_variable`) jako poglądowej statystyki użyliśmy średniej z 10 prób.
+
+
+```{r, echo=FALSE}
+data1
+```
+
+
+## Analiza wyników
+
+Zobaczmy na wykresie, jak wyglądają zależności między kolejnymi parami metod. Dodatkowo każdą parę porównamy z metodą losową `random_variable`, a dla metod losowych sporządzimy wykresy pudełkowe, by zobaczyć ich przybliżony rozkład.
+
+### Metoda `largest_coefficient` vs `smallest_coefficient`
+
+```{r, echo=FALSE}
+data1 <- as.data.frame(t(data1))
+data1_long1 <- gather(data1[,c(1,2:3,11)], method, steps, c(2:4), factor_key = TRUE)
+data1_long2 <- gather(data1[,c(1,4:5,11)], method, steps, c(2:4), factor_key = TRUE)
+data1_long3 <- gather(data1[,c(1,6:7,11)], method, steps, c(2:4), factor_key = TRUE)
+data1_long4 <- gather(data1[,c(1,8:9,11)], method, steps, c(2:4), factor_key = TRUE)
+#data1_long5 <- gather(data1[,c(1,10:11)], method, steps, 2:3, factor_key = TRUE)
+ggplot(data1_long1, aes(x=size, y=steps, colour=method)) + geom_line(size=1) + geom_point(size=2.5) + theme(legend.position = "bottom") + scale_x_continuous(breaks=pretty_breaks(n=10)) + scale_y_continuous(breaks=pretty_breaks(n=8))
+```
+
+Jak widać, wykluczając bardzo małe problemy, metoda `largest_coefficient` radzi sobie lepiej niż metoda losowa. Co więcej, metoda `smallest_coefficient` radzi sobie gorzej. Wybór największych współczynników może być dobrą strategią przeszukiwania sympleksu.
+
+### Metoda `largest_increase` vs `smallest_increase`
+
+```{r, echo=FALSE}
+ggplot(data1_long2, aes(x=size, y=steps, colour=method)) + geom_line(size=1) + geom_point(size=2.5) + theme(legend.position = "bottom") + scale_x_continuous(breaks=pretty_breaks(n=10)) + scale_y_continuous(breaks=pretty_breaks(n=8))
+```
+
+Tutaj widzimy podobnie silną zależność. Metoda `largest_increase` ogólnie radzi sobie lepiej niż metoda losowa, a metoda `smallest_increase` radzi sobie najgorzej. Wybór kierunku o największym wzroście funkcji celu również może być dobrą strategią poszukiwań.
+
+### Metoda `steepest_edge` vs `flattest_edge`
+
+```{r, echo=FALSE}
+ggplot(data1_long3, aes(x=size, y=steps, colour=method)) + geom_line(size=1) + geom_point(size=2.5) + theme(legend.position = "bottom") + scale_x_continuous(breaks=pretty_breaks(n=10)) + scale_y_continuous(breaks=pretty_breaks(n=8))
+```
+
+Wykres ten jest uderzająco podobny do poprzedniego. Okazuje się, że chodzenie w kierunku gradientu metodą `steepest edge` daje podobny zysk jak szukanie największego wzrostu funkcji celu. Podobnie też chodzenie w kierunku przeciwnym do gradientu `flattest edge` daje podobne pogorszenie jak szukanie najmniejszego wzrostu funkcji celu. 
+
+### Metoda `lexicographical_max` vs `lexicographical_min`
+
+```{r, echo=FALSE}
+ggplot(data1_long4, aes(x=size, y=steps, colour=method)) + geom_line(size=1) + geom_point(size=2.5) + theme(legend.position = "bottom") + scale_x_continuous(breaks=pretty_breaks(n=10)) + scale_y_continuous(breaks=pretty_breaks(n=8))
+```
+
+W tym przypadku zdaje się, że nie ma wyraźnej różnicy między trzema metodami. Wybór pierwszej zmiennej przez `lexicographical_max` jak i ostatniej przez `lexicographical_min` daje podobny rezultat co metoda losowa.
+
+### Metoda `random_edge` vs `random_variable`
+
+```{r, echo=FALSE}
+data1_long5 <- read.csv("methods_random.csv", sep=" ")
+data1_long5$size <- as.factor(data1_long5$size)
+# przydatne do pliku methods_all.csv:
+# data1_long5 %>% group_by(method, size) %>% summarise(mean=mean(steps))
+ggplot(data1_long5, aes(x=size, y=steps, colour=method)) + geom_boxplot(size=1) + theme(legend.position = "bottom") + scale_y_continuous(breaks=pretty_breaks(n=8))
+```
+
+Porównując wykresy pudełkowe dla metod `random_edge` i `random_variable` raczej nie zauważamy istotnych różnic między tymi metodami.
+
+## Podsumowanie
+
+Dokonaliśmy porównania 10 różnych metod przeszukiwania wierzchołków w metodzie sympleks. Metody zastosowaliśmy dla 10 różnych problemów testowych. Problemy te uporządkowaliśmy ze względu na ilość zmiennych, które w nich występują (od 2 do 21). Dla dwóch ostatnich metod przeanalizowaliśmy dodatkowo rozkład wyników, gdyż metody te nie są deterministyczne.
+
+Okazało się, że metody `largest_coefficient`, `largest_increase` oraz `steepest_edge` dają wyraźnie lepsze rezultaty, niż metody losowe. Z drugiej strony analogiczne metody `smallest_coefficient`, `smallest_increase` oraz `flattest_edge` dają rezultaty znacznie gorsze. Co więcej wynik dla `largest_increase` i `steepest_edge` jest prawie taki sam (i podobnie dla `smallest_increase` i `flattest_edge`).
+
+Pozostałe metody czyli `lexicographical_max`, `lexicographical_min`, `random_edge` oraz `random_variable` dają podobne, średnio dobre wyniki.
+
+Zatem najlepsze ze strategii, które poddaliśmy analizie to branie zmiennej o największym współczynniku funkcji celu lub podążanie w kierunku największego wzrostu funkcji celu albo podążanie wzdłuż jej gradientu.
+
+...
