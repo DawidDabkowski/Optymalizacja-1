@@ -207,22 +207,77 @@ def my_leaving(self):
 
 LP = \
 """
-Maximize
-f: 310 x1+ 310 y1 +310 z1 + 380 x2 + 380 y2 + 380 z2 + 350 x3 + 350 y3 + 350 z3 + 285 x4 + 285 y4 + 285 z4  
-Subject To
-a1: x1+x2+x3+x4<=10
-a2: y1+y2+y3+y4<=16
-a3: z1+z2+z3+z4<=8
-b1: x1+y1+z1<=18
-b2: x2+y2+z2<=15
-b3: x3+y3+z3<=23
-b4: x4+y4+z4<=12
-c1: 480 x1+650 x2+580 x3+390 x4<=6800
-c2: 480 y1+650 y2+580 y3+390 y4<=8700
-c3: 480 z1+650 z2+580 z3+390 z4<=5300
-d1: 0.1 x1+ 0.1 x2+ 0.1 x3 +0.1 x4- 0.0625 y1 -0.0625 y2- 0.0625 y3 -0.0625 y4=0
-d2: 0.0625 y1 +0.0625 y2+0.0625 y3 +0.0625 y4 -0.125 z1- 0.125 z2- 0.125 z3 -0.125 z4=0
+Minimize
+obj:  N11 + N12 + N13 + N21 + N22 + N23 + N31 + N32 + N33 + N41 + N42 + N43 + N51 + N52 + N53 + N61 + N62 + N63 + N71 + N72 + N73
 
+Subject To
+w1: N11 + N12 + N13 + N21 + N22 + N23 + N31 + N32 + N33 + N41 + N42 + N43 + N51 + N52 + N53 + N61 + N62 + N63 + N71 + N72 + N73 <= 60
+monday1: N11 + N71 + N61 + N51 >= 5
+monday2: N12 + N72 + N62 + N52 >= 7
+monday3: N13 + N73 + N63 + N53 >= 9
+tuesday1: N11 + N71 + N61 + N21 >= 3
+tuesday2: N12 + N72 + N62 + N22 >= 8
+tuesday3: N13 + N73 + N63 + N23 >= 10
+wednesday1: N11 + N71 + N31 + N21 >= 2
+wednesday2: N12 + N72 + N32 + N22 >= 9
+wednesday3: N13 + N73 + N33 + N23 >= 10
+thursday1: N11 + N41 + N31 + N21 >= 4
+thursday2: N12 + N42 + N32 + N22 >= 5
+thursday3: N13 + N43 + N33 + N23 >= 7
+friday1: N51 + N41 + N31 + N21 >= 3
+friday2: N52 + N42 + N32 + N22 >= 7
+friday3: N53 + N43 + N33 + N23 >= 11
+saturday1: N51 + N41 + N31 + N61 >= 2
+saturday2: N52 + N42 + N32 + N62 >= 2
+saturday3: N53 + N43 + N33 + N63 >= 2
+sunday1: N51 + N41 + N71 + N61 >= 2
+sunday2: N52 + N42 + N72 + N62 >= 5
+sunday3: N53 + N43 + N73 + N63 >= 2
+Bounds
+N11 => 0
+N21 => 0
+N31 => 0
+N41 => 0
+N51 => 0
+N61 => 0
+N71 => 0
+N12 => 0
+N22 => 0
+N32 => 0
+N42 => 0
+N52 => 0
+N62 => 0
+N72 => 0
+N13 => 0
+N23 => 0
+N33 => 0
+N43 => 0
+N53 => 0
+N63 => 0
+N73 => 0
+
+Generals
+N11
+N21
+N31
+N41
+N51
+N61
+N71
+N12
+N22
+N32
+N42
+N52
+N62
+N72
+N13
+N23
+N33
+N43
+N53
+N63
+N73
 End
 """
 
@@ -526,9 +581,11 @@ def read(fullDataString):
 # Parsowanie danych
 #
 
-method = 0
+#method = 0
+method = 9
 repeats = 0
-limit = 10
+#limit = 10
+limit = 100
 steps = 0
 
 while method <= 9:
@@ -574,13 +631,24 @@ while method <= 9:
 
     #print D.objective_value()
     #print P.optimal_solution()
+#    if method in [8,9]:
+#        steps += D.pivots
+#        if repeats == limit:
+#            print float(steps/limit),
+#            method += 1
+#            repeats = 0
+#            steps = 0
+#        else:
+#            repeats += 1
+#    else:
+#        print D.pivots,
+#        method += 1
+        
     if method in [8,9]:
-        steps += D.pivots
-        if repeats == limit:
-            print float(steps/limit),
+        print pivot_functions[method][0][:-15], "21", D.pivots
+        if repeats == limit-1:
             method += 1
             repeats = 0
-            steps = 0
         else:
             repeats += 1
     else:
